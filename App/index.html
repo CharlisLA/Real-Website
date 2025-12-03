@@ -4,12 +4,120 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.">
     <title>My First Page</title>
+    <style>
+        /* Button Styles */
+        .info-button {
+            padding: 15px 30px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin: 10px;
+        }
+
+        .info-button:hover {
+            background-color: #45a049;
+        }
+
+        /* Popup Overlay */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .popup-overlay.active {
+            display: flex;
+        }
+
+        /* Popup Box */
+        .popup-box {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: popupSlideIn 0.3s ease-out;
+            position: relative;
+        }
+
+        @keyframes popupSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Close Button */
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            border: none;
+            background: none;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        /* Popup Content */
+        .popup-box h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .popup-box p {
+            color: #666;
+            line-height: 1.6;
+        }
+    </style>
 </head>
 <body>
     <h1>Hello World!</h1>
     <p>This is my first webpage.</p>
     <span id="">D</span>
     ️<button>Click Me Brah</button>
+
+    <!-- Popup Info Button -->
+    <button class="info-button" onclick="openPopup()">📖 Show Info</button>
+
+    <!-- Popup Overlay -->
+    <div class="popup-overlay" id="popupOverlay" onclick="closePopupOnOverlay(event)">
+        <div class="popup-box">
+            <button class="close-btn" onclick="closePopup()">×</button>
+            <h2>📋 Information</h2>
+            <p>This is a popup window with important information!</p>
+            <p>You can add any content here:</p>
+            <ul>
+                <li>Text and paragraphs</li>
+                <li>Images and videos</li>
+                <li>Forms and inputs</li>
+                <li>Links and buttons</li>
+            </ul>
+            <p><strong>Click the × or outside the box to close.</strong></p>
+        </div>
+    </div>
 
 
 <script src="script.js"></script>
