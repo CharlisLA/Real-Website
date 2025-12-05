@@ -6,6 +6,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.">
     <title>My First Page</title>
     <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --modal-bg: #ffffff;
+            --modal-text: #333333;
+            --input-bg: #ffffff;
+            --input-text: #000000;
+            --card-bg: #f5f5f5;
+            --highlight-bg: #e3f2fd;
+            --border-color: #eee;
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --text-color: #ffffff;
+            --modal-bg: #1e1e1e;
+            --modal-text: #ffffff;
+            --input-bg: #333333;
+            --input-text: #ffffff;
+            --card-bg: #2c2c2c;
+            --highlight-bg: #1a3a5a;
+            --border-color: #444;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
         /* Button Styles */
         .info-button {
             padding: 15px 30px;
@@ -15,12 +45,12 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.2s;
             margin: 10px;
         }
 
         .info-button:hover {
-            background-color: #45a049;
+            background-color: #b62d1b;
         }
 
         /* Popup Overlay */
@@ -43,7 +73,8 @@
 
         /* Popup Box */
         .popup-box {
-            background-color: white;
+            background-color: var(--modal-bg);
+            color: var(--modal-text);
             padding: 30px;
             border-radius: 12px;
             max-width: 500px;
@@ -51,6 +82,41 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             animation: popupSlideIn 0.3s ease-out;
             position: relative;
+        }
+
+        .popup-box h2 {
+            margin-top: 0;
+            color: var(--modal-text);
+        }
+
+        .popup-box p,
+        .popup-box ul {
+            color: var(--modal-text);
+            line-height: 1.6;
+        }
+
+        input,
+        select {
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Helper Classes for Theming */
+        .theme-card {
+            background-color: var(--card-bg) !important;
+        }
+
+        .theme-highlight {
+            background-color: var(--highlight-bg) !important;
+        }
+
+        .theme-border-top {
+            border-top: 1px solid var(--border-color) !important;
+        }
+
+        .theme-border-bottom {
+            border-bottom: 1px solid var(--border-color) !important;
         }
 
         @keyframes popupSlideIn {
@@ -80,27 +146,188 @@
         }
 
         .close-btn:hover {
-            color: #333;
+            color: var(--modal-text);
         }
 
-        /* Popup Content */
-        .popup-box h2 {
-            margin-top: 0;
-            color: #333;
-        }
+        /* History Item Styles */
+        .history-item {
+            < !DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1."><title>My First Page</title><style> :root {
+                --bg-color: #ffffff;
+                --text-color: #000000;
+                --modal-bg: #ffffff;
+                --modal-text: #333333;
+                --input-bg: #ffffff;
+                --input-text: #000000;
+                --card-bg: #f5f5f5;
+                --highlight-bg: #e3f2fd;
+                --border-color: #eee;
+            }
 
-        .popup-box p {
-            color: #666;
-            line-height: 1.6;
-        }
+            body.dark-mode {
+                --bg-color: #121212;
+                --text-color: #ffffff;
+                --modal-bg: #1e1e1e;
+                --modal-text: #ffffff;
+                --input-bg: #333333;
+                --input-text: #ffffff;
+                --card-bg: #2c2c2c;
+                --highlight-bg: #1a3a5a;
+                --border-color: #444;
+            }
+
+            body {
+                background-color: var(--bg-color);
+                color: var(--text-color);
+                transition: background-color 0.3s, color 0.3s;
+            }
+
+            /* Button Styles */
+            .info-button {
+                padding: 15px 30px;
+                font-size: 16px;
+                background-color: #ac4117;
+                color: rgb(0, 0, 0);
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: background-color 0.2s;
+                margin: 10px;
+            }
+
+            .info-button:hover {
+                background-color: #b62d1b;
+            }
+
+            /* Popup Overlay */
+            .popup-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.7);
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            }
+
+            .popup-overlay.active {
+                display: flex;
+            }
+
+            /* Popup Box */
+            .popup-box {
+                background-color: var(--modal-bg);
+                color: var(--modal-text);
+                padding: 30px;
+                border-radius: 12px;
+                max-width: 500px;
+                width: 90%;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                animation: popupSlideIn 0.3s ease-out;
+                position: relative;
+            }
+
+            .popup-box h2 {
+                margin-top: 0;
+                color: var(--modal-text);
+            }
+
+            .popup-box p,
+            .popup-box ul {
+                color: var(--modal-text);
+                line-height: 1.6;
+            }
+
+            input,
+            select {
+                background-color: var(--input-bg);
+                color: var(--input-text);
+                border: 1px solid var(--border-color);
+            }
+
+            /* Helper Classes for Theming */
+            .theme-card {
+                background-color: var(--card-bg) !important;
+            }
+
+            .theme-highlight {
+                background-color: var(--highlight-bg) !important;
+            }
+
+            .theme-border-top {
+                border-top: 1px solid var(--border-color) !important;
+            }
+
+            .theme-border-bottom {
+                border-bottom: 1px solid var(--border-color) !important;
+            }
+
+            @keyframes popupSlideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-50px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            /* Close Button */
+            .close-btn {
+                position: absolute;
+                top: 10px;
+                right: 15px;
+                font-size: 28px;
+                font-weight: bold;
+                color: #999;
+                cursor: pointer;
+                border: none;
+                background: none;
+                transition: color 0.2s;
+            }
+
+            .close-btn:hover {
+                color: var(--modal-text);
+            }
+
+            /* History Item Styles */
+            .history-item {
+                padding: 10px;
+                border-bottom: 1px solid var(--border-color);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .history-item:last-child {
+                border-bottom: none;
+            }
+
+            .history-item button {
+                background: #ff5252;
+                color: white;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 4px;
+                cursor: pointer;
+                margin-left: 10px;
+            }
     </style>
 </head>
 
 <body>
     <h1>Hello World!</h1>
     <p>This is my first webpage.</p>
-    <span id="">D</span>
-    ️<button>Click Me Brah</button>
+    <button class="info-button" onclick="alert('Clicked!')">Click Me Brah</button>
+
+    <!-- Dark Mode Toggle -->
+    <button class="info-button" id="darkModeToggle"
+        style="position: absolute; top: 10px; right: 10px; background-color: #333; color: white;"
+        onclick="toggleDarkMode()">🌙 Dark Mode</button>
 
     <!-- Popup Info Button -->
     <button class="info-button" onclick="openPopup()">📖 Show Info</button>
@@ -109,16 +336,125 @@
     <div class="popup-overlay" id="popupOverlay" onclick="closePopupOnOverlay(event)">
         <div class="popup-box">
             <button class="close-btn" onclick="closePopup()">×</button>
-            <h2>📋 Information</h2>
-            <p>This is a popup window with important information!</p>
-            <p>You can add any content here:</p>
+            <h2>📋 What is this Website About?</h2>
+            <p>This Website is about:</p>
             <ul>
-                <li>Text and paragraphs</li>
+                <li>Improving my HTML skills and trying to make a real website about how to manage your
+                    money and
+                    finding ways to save money while also knowing what you are spending things on and
+                    marking them
+                    down </li>
                 <li>Images and videos</li>
                 <li>Forms and inputs</li>
                 <li>Links and buttons</li>
             </ul>
             <p><strong>Click the × or outside the box to close.</strong></p>
+        </div>
+    </div>
+
+    <!-- Wallet Button -->
+    <button class="info-button" style="background-color: #2e7d32;" onclick="openWallet()">💰 Open
+        Wallet</button>
+
+    <!-- Wallet Overlay -->
+    <div class="popup-overlay" id="walletOverlay" onclick="closeWalletOnOverlay(event)">
+        <div class="popup-box" style="max-width: 600px;">
+            <button class="close-btn" onclick="closeWallet()">×</button>
+
+            <!-- Login Section -->
+            <div id="loginSection" style="text-align: center; padding: 20px;">
+                <h2>🔐 Login / Sign Up</h2>
+                <input type="text" id="usernameInput" placeholder="Username"
+                    style="padding: 10px; margin: 10px; width: 80%;">
+                <br>
+                <input type="password" id="passwordInput" placeholder="Password"
+                    style="padding: 10px; margin: 10px; width: 80%;">
+                <br>
+                <button onclick="login()"
+                    style="padding: 10px 20px; background-color: #2e7d32; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px;">Sign
+                    Up / Login</button>
+            </div>
+
+            <!-- Wallet Content (Hidden by default) -->
+            <div id="walletContent" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h2 style="margin: 0;">💰 My Wallet Tracker</h2>
+                    <span id="userDisplay" style="font-weight: bold; color: #555;"></span>
+                </div>
+
+                <!-- Balance Section -->
+                <div class="theme-card"
+                    style="text-align: center; margin-bottom: 20px; padding: 15px; border-radius: 8px;">
+                    <h3>Current Balance</h3>
+                    <h1 id="displayBalance" style="color: #2e7d32; margin: 10px 0;">$0.00</h1>
+                    <div id="setBalanceSection">
+                        <input type="number" id="initialBalanceInput" placeholder="Enter starting balance"
+                            style="padding: 5px;">
+                        <button onclick="setBalance()" style="padding: 5px 10px; cursor: pointer;">Set
+                            Balance</button>
+                    </div>
+                </div>
+
+                <!-- Transaction Section -->
+                <div class="theme-border-top" style="margin-bottom: 20px; padding-top: 15px;">
+                    <h3>Add Transaction</h3>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <select id="transactionType" style="padding: 8px; flex: 1;">
+                            <option value="gain">➕ Gain Money (Income)</option>
+                            <option value="spend">➖ Spend Money (Expense)</option>
+                        </select>
+                        <select id="transactionSource" style="padding: 8px; flex: 1;">
+                            <option value="cash">💵 Cash</option>
+                            <option value="bank">🏦 Bank</option>
+                        </select>
+                        <input type="number" id="transactionAmount" placeholder="Amount ($)"
+                            style="padding: 8px; width: 80px;">
+                    </div>
+                    <input type="text" id="transactionReason" placeholder="Why? (e.g., Sold game, Lunch)"
+                        style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box;">
+                    <button onclick="addTransaction()"
+                        style="width: 100%; padding: 10px; background-color: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer;">Add
+                        Transaction</button>
+                </div>
+
+                <!-- Savings Goal Section -->
+                <div class="theme-border-top" style="padding-top: 15px;">
+                    <h3>🎯 Savings Goal</h3>
+                    <div id="goalDisplay" class="theme-highlight"
+                        style="display: none; margin-bottom: 10px; padding: 10px; border-radius: 4px;">
+                        <strong>Goal:</strong> <span id="goalNameDisplay"></span><br>
+                        <strong>Target:</strong> $<span id="goalAmountDisplay"></span>
+                    </div>
+                    <div id="setGoalSection">
+                        <input type="text" id="goalNameInput" placeholder="Goal Name (e.g., PS5)"
+                            style="width: 100%; padding: 8px; margin-bottom: 5px; box-sizing: border-box;">
+                        <input type="number" id="goalAmountInput" placeholder="Target Amount ($)"
+                            style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box;">
+                        <button onclick="setGoal()"
+                            style="width: 100%; padding: 10px; background-color: #ed6c02; color: white; border: none; border-radius: 4px; cursor: pointer;">Set
+                            Goal</button>
+                    </div>
+                </div>
+
+                <!-- History Button -->
+                <div style="margin-top: 15px; text-align: center;">
+                    <button onclick="openHistory()"
+                        style="background: #607d8b; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">📜
+                        View Transaction History</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Overlay -->
+    <div class="popup-overlay" id="historyOverlay" onclick="closeHistoryOnOverlay(event)">
+        <div class="popup-box" style="max-width: 600px;">
+            <button class="close-btn" onclick="closeHistory()">×</button>
+            <h2>📜 Transaction History</h2>
+            <div id="historyList" style="max-height: 300px; overflow-y: auto; text-align: left;">
+                <!-- Transactions will be added here -->
+                <p style="text-align: center; color: #999;">No transactions yet.</p>
+            </div>
         </div>
     </div>
 
