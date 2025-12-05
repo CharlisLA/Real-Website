@@ -41,6 +41,47 @@ let savingsGoal = {
 let transactions = []; // Store transaction history
 let currentUser = null; // Track logged in user
 
+// Load data from LocalStorage on startup
+function loadUserData(username) {
+    const users = JSON.parse(localStorage.getItem('walletUsers')) || {};
+    if (users[username]) {
+        const userData = users[username];
+        currentBalance = userData.balance || 0;
+        transactions = userData.transactions || [];
+        savingsGoal = userData.goal || { name: "", amount: 0 };
+
+        // Update UI
+        updateBalanceDisplay();
+        if (savingsGoal.name) {
+            document.getElementById('goalNameDisplay').innerText = savingsGoal.name;
+            document.getElementById('goalAmountDisplay').innerText = savingsGoal.amount.toFixed(2);
+            document.getElementById('goalDisplay').style.display = 'block';
+            document.getElementById('setGoalSection').style.display = 'none';
+        } else {
+            document.getElementById('goalDisplay').style.display = 'none';
+            document.getElementById('setGoalSection').style.display = 'block';
+        }
+    }
+}
+
+// Save data to LocalStorage
+function saveUserData() {
+    if (!currentUser) return;
+
+    const users = JSON.parse(localStorage.getItem('walletUsers')) || {};
+    // Ensure we preserve the balanceSet flag if it exists
+    const existingUser = users[currentUser] || {};
+
+    users[currentUser] = {
+        password: users[currentUser]?.password || existingUser.password,
+        balance: currentBalance,
+        transactions: transactions,
+        goal: savingsGoal,
+        balanceSet: existingUser.balanceSet || false // Persist the flag
+    };
+    localStorage.setItem('walletUsers', JSON.stringify(users));
+}
+
 // Dark Mode Toggle
 function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
@@ -61,36 +102,126 @@ function openWallet() {
     const wallet = document.getElementById('walletOverlay');
     wallet.classList.add('active');
 
-    // Reset view to login if not logged in
+    // Check if user is already logged in
     if (!currentUser) {
-        document.getElementById('loginSection').style.display = 'block';
+        showLogin();
         document.getElementById('walletContent').style.display = 'none';
+        document.getElementById('setupSection').style.display = 'none';
+        document.getElementById('authSection').style.display = 'block';
     } else {
-        document.getElementById('loginSection').style.display = 'none';
-        document.getElementById('walletContent').style.display = 'block';
+        // User is logged in, check if they need to set balance
+        const users = JSON.parse(localStorage.getItem('walletUsers')) || {};
+        if (users[currentUser] && users[currentUser].balanceSet) {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('setupSection').style.display = 'none';
+            document.getElementById('walletContent').style.display = 'block';
+        } else {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('walletContent').style.display = 'none';
+            document.getElementById('setupSection').style.display = 'block';
+        }
     }
+}
+
+// Switch to Sign Up Form
+function showSignUp() {
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('signupForm').style.display = 'block';
+}
+
+// Switch to Login Form
+function showLogin() {
+    document.getElementById('signupForm').style.display = 'none';
+    document.getElementById('loginForm').style.display = 'block';
 }
 
 // Login Function
 function login() {
-    const usernameInput = document.getElementById('usernameInput');
-    const passwordInput = document.getElementById('passwordInput');
+    const usernameInput = document.getElementById('loginUsername');
+    const passwordInput = document.getElementById('loginPassword');
     const username = usernameInput.value.trim();
     const password = passwordInput.value.trim();
 
-    if (username && password) {
+    if (!username || !password) {
+        alert("Please enter both username and password.");
+        return;
+    }
+
+    const users = JSON.parse(localStorage.getItem('walletUsers')) || {};
+
+    if (users[username] && users[username].password === password) {
         currentUser = username;
         document.getElementById('userDisplay').innerText = `👤 ${currentUser}`;
 
-        // Switch to Wallet View
-        document.getElementById('loginSection').style.display = 'none';
-        document.getElementById('walletContent').style.display = 'block';
+        loadUserData(username);
 
-        // Clear password for security (basic)
+        // Check if balance is set
+        if (users[username].balanceSet) {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('setupSection').style.display = 'none';
+            document.getElementById('walletContent').style.display = 'block';
+        } else {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('walletContent').style.display = 'none';
+            document.getElementById('setupSection').style.display = 'block';
+        }
+
+        // Clear inputs
+        usernameInput.value = '';
         passwordInput.value = '';
     } else {
-        alert("Please enter both a username and password.");
+        alert("Invalid username or password.");
     }
+}
+
+// Sign Up Function
+function signup() {
+    const usernameInput = document.getElementById('signupUsername');
+    const passwordInput = document.getElementById('signupPassword');
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value.trim();
+
+    if (!username || !password) {
+        alert("Please enter a username and password.");
+        return;
+    }
+
+    const users = JSON.parse(localStorage.getItem('walletUsers')) || {};
+
+    if (users[username]) {
+        alert("Username already exists. Please choose another.");
+        return;
+    }
+
+    // Create new user
+    users[username] = {
+        password: password,
+        balance: 0,
+        transactions: [],
+        goal: { name: "", amount: 0 },
+        balanceSet: false // Flag to force setup
+    };
+    localStorage.setItem('walletUsers', JSON.stringify(users));
+
+    alert("Account created! Please log in.");
+    showLogin();
+
+    // Pre-fill login username
+    document.getElementById('loginUsername').value = username;
+    document.getElementById('loginPassword').value = '';
+}
+
+// Logout Function
+function logout() {
+    currentUser = null;
+    currentBalance = 0;
+    transactions = [];
+    savingsGoal = { name: "", amount: 0 };
+
+    document.getElementById('walletContent').style.display = 'none';
+    document.getElementById('setupSection').style.display = 'none';
+    document.getElementById('authSection').style.display = 'block';
+    showLogin();
 }
 
 // Close the Wallet Popup
@@ -114,11 +245,21 @@ function setBalance() {
     if (!isNaN(amount)) {
         currentBalance = amount;
         updateBalanceDisplay();
-        // Hide the set balance input after setting it (optional, but cleaner)
-        document.getElementById('setBalanceSection').style.display = 'none';
 
-        // Add initial balance to history
+        // Mark balance as set for this user
+        const users = JSON.parse(localStorage.getItem('walletUsers')) || {};
+        if (users[currentUser]) {
+            users[currentUser].balanceSet = true;
+            users[currentUser].balance = currentBalance;
+            localStorage.setItem('walletUsers', JSON.stringify(users));
+        }
+
         addHistoryItem('Initial Balance', amount, 'set', 'cash');
+        saveUserData();
+
+        // Transition to Wallet Content
+        document.getElementById('setupSection').style.display = 'none';
+        document.getElementById('walletContent').style.display = 'block';
     } else {
         alert("Please enter a valid number for the balance.");
     }
@@ -154,11 +295,12 @@ function addTransaction() {
             addHistoryItem(reason, amount, 'spend', source);
         } else {
             alert("Insufficient funds! You cannot spend more than you have.");
-            return; // Exit function if not enough money
+            return;
         }
     }
 
     updateBalanceDisplay();
+    saveUserData();
 
     // Clear inputs
     amountInput.value = '';
@@ -180,7 +322,9 @@ function setGoal() {
         document.getElementById('goalAmountDisplay').innerText = amount.toFixed(2);
 
         document.getElementById('goalDisplay').style.display = 'block';
-        document.getElementById('setGoalSection').style.display = 'none'; // Hide inputs
+        document.getElementById('setGoalSection').style.display = 'none';
+
+        saveUserData();
     } else {
         alert("Please enter a valid goal name and amount.");
     }
@@ -201,7 +345,7 @@ function addHistoryItem(reason, amount, type, source) {
         source: source, // 'cash', 'bank'
         date: new Date().toLocaleString()
     };
-    transactions.unshift(transaction); // Add to beginning of array
+    transactions.unshift(transaction);
 }
 
 function openHistory() {
@@ -262,16 +406,14 @@ function deleteTransaction(id) {
         } else if (t.type === 'spend') {
             currentBalance += t.amount;
         } else if (t.type === 'set') {
-            // If deleting initial balance, maybe reset to 0 or do nothing? 
-            // Let's just reset to 0 for simplicity if they delete the set event, 
-            // though logic might get weird if other transactions exist.
-            // For now, let's just subtract it.
             currentBalance -= t.amount;
-            document.getElementById('setBalanceSection').style.display = 'block'; // Allow setting again
+            // We don't want to show the setup screen again if they delete the initial balance transaction
+            // because they are already "in" the wallet. They can just add another transaction.
         }
 
         transactions.splice(index, 1);
         updateBalanceDisplay();
-        openHistory(); // Re-render list
+        saveUserData();
+        openHistory();
     }
 }
