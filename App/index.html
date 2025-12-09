@@ -188,35 +188,82 @@
             pointer-events: auto;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
+
+        /* Full Page Overlay */
+        .full-page-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            z-index: 2000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .full-page-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .full-page-content {
+            text-align: center;
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        .full-page-close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            padding: 10px 20px;
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
     </style>
 </head>
 
 <body>
     <h1>Welcome to the Wallet Tracker</h1>
     <h2>How does this website work?</h2>
-    <button class="info-button" onclick="alert('Clicked!')">Click Me Brah</button>
+    <button class="info-button" onclick="openFullPage()">Click Me Brah</button>
 
-    <!-- Dark Mode Toggle -->
-    <button class="info-button" id="darkModeToggle"
-        style="position: absolute; top: 10px; right: 10px; background-color: #333; color: white;"
-        onclick="toggleDarkMode()">🌙 Dark Mode</button>
-
-    <!-- Popup Info Button -->
-    <!-- Popup Info Button -->
-    <!-- Moved to bottom nav -->
-
-    <!-- Popup Overlay -->
+    <!-- Full Page Overlay -->
+    <div class="full-page-overlay" id="fullPageOverlay">
+        <button class="full-page-close-btn" onclick="closeFullPage()">Close ×</button>
+        <div class="full-page-content">
+            <h1>🎉 Welcome to the Big Page! 🎉</h1>
+            <p style="font-size: 1.2em;">This is a whole new view that takes up the entire screen.</p>
+            <p>You can put anything here: charts, more complex forms, or just a nice message.</p>
+            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3hveDg5Z3c3Z3c3Z3c3Z3c3Z3c3Z3c3Z3c3Z3c3Z3c3/26tOZ42Mg6pbTUPhw/giphy.gif"
+                alt="Cool GIF" style="max-width: 100%; border-radius: 10px; margin-top: 20px;">
+        </div>
+    </div>
     <div class="popup-overlay" id="popupOverlay" onclick="closePopupOnOverlay(event)">
         <div class="popup-box">
             <button class="close-btn" onclick="closePopup()">×</button>
-            <h2>📋 What is this Website About?</h2>
-            <p>This Website is about:</p>
+            <h2>How does this website work?</h2>
+            <p>This website works by:</p>
             <ul>
-                <li>Improving my HTML skills and trying to make a real website about how to manage your
-                    money and
-                    finding ways to save money while also knowing what you are spending things on and
-                    marking them
-                    down </li>
+                <li> </li>
                 <li>Images and videos</li>
                 <li>Forms and inputs</li>
                 <li>Links and buttons</li>
@@ -302,8 +349,8 @@
                     <h3>Add Transaction</h3>
                     <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                         <select id="transactionType" style="padding: 8px; flex: 1;">
-                            <option value="gain">➕ Gain Money (Income)</option>
-                            <option value="spend">➖ Spend Money (Expense)</option>
+                            <option value="gain">✚ Gain Money (Income)</option>
+                            <option value="spend">━ Spend Money (Expense)</option>
                         </select>
                         <select id="transactionSource" style="padding: 8px; flex: 1;">
                             <option value="cash">💵 Cash</option>

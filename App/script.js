@@ -25,8 +25,22 @@ function closePopupOnOverlay(event) {
 document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape') {
         closePopup();
+        closeFullPage();
     }
 });
+
+// ===========================================
+// FULL PAGE OVERLAY FUNCTIONS
+// ===========================================
+
+function openFullPage() {
+    document.getElementById('fullPageOverlay').classList.add('active');
+}
+
+function closeFullPage() {
+    document.getElementById('fullPageOverlay').classList.remove('active');
+}
+
 
 
 // ===========================================
