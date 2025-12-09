@@ -414,6 +414,18 @@ function deleteTransaction(id) {
         transactions.splice(index, 1);
         updateBalanceDisplay();
         saveUserData();
-        openHistory();
     }
 }
+
+// Undo the last transaction
+function undoLastTransaction() {
+    if (transactions.length === 0) {
+        alert("No transactions to undo.");
+        return;
+    }
+
+    // The most recent transaction is always at index 0 because we unshift()
+    const lastTransactionId = transactions[0].id;
+    deleteTransaction(lastTransactionId);
+}
+
