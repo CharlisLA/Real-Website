@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.">
-    <title>My First Page</title>
+    <title>Wallet Tracker</title>
     <style>
         :root {
             --bg-color: #ffffff;
@@ -171,12 +171,29 @@
             cursor: pointer;
             margin-left: 10px;
         }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .bottom-nav button {
+            pointer-events: auto;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
     </style>
 </head>
 
 <body>
-    <h1>Hello World!</h1>
-    <p>This is my first webpage.</p>
+    <h1>Welcome to the Wallet Tracker</h1>
+    <h2>How does this website work?</h2>
     <button class="info-button" onclick="alert('Clicked!')">Click Me Brah</button>
 
     <!-- Dark Mode Toggle -->
@@ -185,7 +202,8 @@
         onclick="toggleDarkMode()">🌙 Dark Mode</button>
 
     <!-- Popup Info Button -->
-    <button class="info-button" onclick="openPopup()">📖 Show Info</button>
+    <!-- Popup Info Button -->
+    <!-- Moved to bottom nav -->
 
     <!-- Popup Overlay -->
     <div class="popup-overlay" id="popupOverlay" onclick="closePopupOnOverlay(event)">
@@ -208,8 +226,7 @@
     </div>
 
     <!-- Wallet Button -->
-    <button class="info-button" style="background-color: #2e7d32;" onclick="openWallet()">💰 Open
-        Wallet</button>
+    <!-- Moved to bottom nav -->
 
     <!-- Wallet Overlay -->
     <div class="popup-overlay" id="walletOverlay" onclick="closeWalletOnOverlay(event)">
@@ -348,6 +365,12 @@
         </div>
     </div>
 
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <button class="info-button" onclick="openPopup()">📖 Show Info</button>
+        <button class="info-button" style="background-color: #2e7d32;" onclick="openWallet()">💰 Open Wallet</button>
+    </div>
 
     <script src="script.js"></script>
 </body>
