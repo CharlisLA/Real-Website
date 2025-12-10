@@ -44,6 +44,105 @@ function closeFullPage() {
 
 
 // ===========================================
+// NAVIGATION FUNCTIONS
+// ===========================================
+
+function navigateTo(pageId) {
+    // Hide all pages
+    const pages = document.querySelectorAll('.page-section');
+    pages.forEach(page => {
+        page.classList.remove('active');
+    });
+
+    // Show target page
+    const target = document.getElementById(pageId + '-page');
+    if (target) {
+        target.classList.add('active');
+    }
+
+    // Update Nav State
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        item.classList.remove('active');
+        // Simple check if the onclick contains the pageId
+        if (item.getAttribute('onclick').includes(pageId)) {
+            item.classList.add('active');
+        }
+    });
+
+    // Deactivate Wallet in nav if we are navigating elsewhere
+    // (Wallet is an overlay, but we want the nav to reflect "current view" roughly)
+}
+
+function sendEmail() {
+    const name = document.getElementById('contactName').value;
+    const email = document.getElementById('contactEmail').value;
+    const message = document.getElementById('contactMessage').value;
+
+    if (!name || !email || !message) {
+        showToast("Please fill in all fields.", true);
+        return;
+    }
+
+    const subject = `Message from ${name} (${email})`;
+    const body = `${message}`;
+
+    // Construct Mailto Link
+    const mailtoLink = `mailto:ackninzcharlie@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    // Use a temporary link to open the mail client to avoid "blank screen" navigation issues
+    const tempLink = document.createElement('a');
+    tempLink.href = mailtoLink;
+    tempLink.style.display = 'none';
+    document.body.appendChild(tempLink);
+    tempLink.click();
+    document.body.removeChild(tempLink);
+
+    // Clear Inputs
+    document.getElementById('contactName').value = '';
+    document.getElementById('contactEmail').value = '';
+    document.getElementById('contactMessage').value = '';
+
+    // Show Notification
+    showToast("Message Sent!");
+}
+
+function showToast(message, isError = false) {
+    const x = document.getElementById("toast");
+    x.innerText = message;
+    x.style.backgroundColor = isError ? "#d32f2f" : "#333";
+    x.style.visibility = "visible";
+    x.style.animation = "fadein 0.5s, fadeout 0.5s 2.5s";
+
+    // Reset after 3 seconds
+    setTimeout(function () {
+        x.style.visibility = "hidden";
+        x.style.animation = "";
+    }, 3000);
+}
+
+// Add CSS keyframes for toast via JS or ensure they are in CSS. 
+// Adding style tag for toast animations if not present is safer, ensuring self-contained JS mostly,
+// but since we are editing HTML/CSS file too, let's keep it simple. 
+// I will rely on CSS being added or add injection here. 
+// To be safe I will inject a style block for the animation.
+if (!document.getElementById('toast-style')) {
+    const style = document.createElement('style');
+    style.id = 'toast-style';
+    style.innerHTML = `
+        @keyframes fadein {
+            from {bottom: 0; opacity: 0;}
+            to {bottom: 30px; opacity: 1;}
+        }
+        @keyframes fadeout {
+            from {bottom: 30px; opacity: 1;}
+            to {bottom: 0; opacity: 0;}
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// ===========================================
 // WALLET APP FUNCTIONS
 // ===========================================
 
@@ -54,6 +153,29 @@ let savingsGoal = {
 };
 let transactions = []; // Store transaction history
 let currentUser = null; // Track logged in user
+
+// Check for logged in user on startup
+document.addEventListener('DOMContentLoaded', () => {
+    const savedUser = localStorage.getItem('loggedInUser');
+    const users = JSON.parse(localStorage.getItem('walletUsers')) || {};
+
+    if (savedUser && users[savedUser]) {
+        currentUser = savedUser;
+        document.getElementById('userDisplay').innerText = `👤 ${currentUser}`;
+        loadUserData(currentUser);
+
+        // Show wallet immediately if balance is set
+        if (users[currentUser].balanceSet) {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('setupSection').style.display = 'none';
+            document.getElementById('walletContent').style.display = 'block';
+        } else {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('walletContent').style.display = 'none';
+            document.getElementById('setupSection').style.display = 'block';
+        }
+    }
+});
 
 // Load data from LocalStorage on startup
 function loadUserData(username) {
@@ -183,6 +305,9 @@ function login() {
         // Clear inputs
         usernameInput.value = '';
         passwordInput.value = '';
+
+        // Save login state
+        localStorage.setItem('loggedInUser', currentUser);
     } else {
         alert("Invalid username or password.");
     }
@@ -236,6 +361,9 @@ function logout() {
     document.getElementById('setupSection').style.display = 'none';
     document.getElementById('authSection').style.display = 'block';
     showLogin();
+
+    // Clear login state
+    localStorage.removeItem('loggedInUser');
 }
 
 // Close the Wallet Popup

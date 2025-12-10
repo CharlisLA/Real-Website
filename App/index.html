@@ -5,22 +5,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.">
     <title>Wallet Tracker</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #ffffff;
-            --text-color: #000000;
+            --bg-color: #f8f9fa;
+            --text-color: #121212;
             --modal-bg: #ffffff;
             --modal-text: #333333;
             --input-bg: #ffffff;
             --input-text: #000000;
-            --card-bg: #f5f5f5;
+            --card-bg: #ffffff;
             --highlight-bg: #e3f2fd;
-            --border-color: #eee;
+            --border-color: #e0e0e0;
+            --primary-color: #2e7d32;
+            --nav-bg: #ffffff;
+            --nav-text: #555555;
+            --nav-active: #2e7d32;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
         body.dark-mode {
             --bg-color: #121212;
-            --text-color: #ffffff;
+            --text-color: #e0e0e0;
             --modal-bg: #1e1e1e;
             --modal-text: #ffffff;
             --input-bg: #333333;
@@ -28,30 +37,215 @@
             --card-bg: #2c2c2c;
             --highlight-bg: #1a3a5a;
             --border-color: #444;
+            --primary-color: #66bb6a;
+            --nav-bg: #1e1e1e;
+            --nav-text: #bbbbbb;
+            --nav-active: #66bb6a;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            transition: background-color 0.3s, color 0.3s;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            line-height: 1.6;
         }
 
-        /* Button Styles */
-        .info-button {
-            padding: 15px 30px;
-            font-size: 16px;
-            background-color: #ac4117;
-            color: rgb(0, 0, 0);
+        /* Container for Desktop Centering */
+        #app-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 80px;
+            /* Space for bottom nav on mobile */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        /* Headings & Typography */
+        h1,
+        h2,
+        h3 {
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-top: 0;
+            background: linear-gradient(135deg, var(--primary-color), #1976d2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: var(--text-color);
+            opacity: 0.9;
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--nav-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 100;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.3s;
+        }
+
+        .nav-item {
+            color: var(--nav-text);
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: color 0.2s, transform 0.1s;
+            border: none;
+            background: none;
+        }
+
+        .nav-item i {
+            font-size: 1.4rem;
+            margin-bottom: 4px;
+        }
+
+        .nav-item.active {
+            color: var(--nav-active);
+            font-weight: 600;
+        }
+
+        .nav-item:hover {
+            color: var(--nav-active);
+            transform: translateY(-2px);
+        }
+
+        /* Desktop Nav Styling */
+        @media (min-width: 768px) {
+            .nav-bar {
+                top: 0;
+                bottom: auto;
+                border-top: none;
+                border-bottom: 1px solid var(--border-color);
+                justify-content: flex-end;
+                /* Align right */
+                padding: 15px 40px;
+                box-sizing: border-box;
+                gap: 30px;
+            }
+
+            .nav-item {
+                flex-direction: row;
+                gap: 8px;
+                font-size: 1rem;
+            }
+
+            .nav-item i {
+                margin-bottom: 0;
+                font-size: 1.1rem;
+            }
+
+            #app-container {
+                padding-top: 100px;
+                /* Space for top nav */
+                padding-bottom: 20px;
+            }
+        }
+
+        /* Page Sections & Transitions */
+        .page-section {
+            display: none;
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Buttons (General) */
+        .btn {
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.2s;
-            margin: 10px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        .info-button:hover {
-            background-color: #b62d1b;
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
         }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #607d8b;
+            color: white;
+        }
+
+        .btn-accent {
+            background-color: #ff9800;
+            color: white;
+        }
+
+        /* Cards */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+
+        /* -- EXISTING STYLES (Modals, Forms) Preserved -- */
 
         /* Popup Overlay */
         .popup-overlay {
@@ -61,10 +255,23 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            /* Nice glass effect */
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            animation: fadeInOverlay 0.3s ease-out;
+        }
+
+        @keyframes fadeInOverlay {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         .popup-overlay.active {
@@ -76,117 +283,41 @@
             background-color: var(--modal-bg);
             color: var(--modal-text);
             padding: 30px;
-            border-radius: 12px;
+            border-radius: 16px;
             max-width: 500px;
             width: 90%;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            animation: popupSlideIn 0.3s ease-out;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            animation: popupSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            /* Bouncy enter */
             position: relative;
-        }
-
-        .popup-box h2 {
-            margin-top: 0;
-            color: var(--modal-text);
-        }
-
-        .popup-box p,
-        .popup-box ul {
-            color: var(--modal-text);
-            line-height: 1.6;
-        }
-
-        input,
-        select {
-            background-color: var(--input-bg);
-            color: var(--input-text);
-            border: 1px solid var(--border-color);
-        }
-
-        /* Helper Classes for Theming */
-        .theme-card {
-            background-color: var(--card-bg) !important;
-        }
-
-        .theme-highlight {
-            background-color: var(--highlight-bg) !important;
-        }
-
-        .theme-border-top {
-            border-top: 1px solid var(--border-color) !important;
-        }
-
-        .theme-border-bottom {
-            border-bottom: 1px solid var(--border-color) !important;
         }
 
         @keyframes popupSlideIn {
             from {
                 opacity: 0;
-                transform: translateY(-50px);
+                transform: scale(0.9) translateY(20px);
             }
 
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: scale(1) translateY(0);
             }
         }
 
-        /* Close Button */
         .close-btn {
             position: absolute;
-            top: 10px;
-            right: 15px;
+            top: 15px;
+            right: 20px;
             font-size: 28px;
-            font-weight: bold;
+            background: none;
+            border: none;
             color: #999;
             cursor: pointer;
-            border: none;
-            background: none;
             transition: color 0.2s;
         }
 
         .close-btn:hover {
             color: var(--modal-text);
-        }
-
-        /* History Item Styles */
-        .history-item {
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .history-item:last-child {
-            border-bottom: none;
-        }
-
-        .history-item button {
-            background: #ff5252;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 20px;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            z-index: 100;
-            pointer-events: none;
-        }
-
-        .bottom-nav button {
-            pointer-events: auto;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
         /* Full Page Overlay */
@@ -203,20 +334,21 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            animation: fadeIn 0.3s ease-in-out;
+            transition: all 0.3s ease-in-out;
         }
 
         .full-page-overlay.active {
             display: flex;
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        @keyframes fadeIn {
+        @keyframes slideUp {
             from {
-                opacity: 0;
+                transform: translateY(100%);
             }
 
             to {
-                opacity: 1;
+                transform: translateY(0);
             }
         }
 
@@ -226,175 +358,273 @@
             padding: 20px;
         }
 
-        .full-page-close-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 24px;
-            padding: 10px 20px;
-            background-color: #d32f2f;
-            color: white;
-            border: none;
+        /* Inputs */
+        input,
+        select {
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            border: 1px solid var(--border-color);
+            padding: 12px;
             border-radius: 8px;
-            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* Helper Styles */
+        .theme-highlight {
+            background-color: var(--highlight-bg) !important;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .theme-border-top {
+            border-top: 1px solid var(--border-color) !important;
+            padding-top: 20px;
+            margin-top: 10px;
+        }
+
+        /* History Items */
+        .history-item {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Utility */
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
 
 <body>
-    <h1>Welcome to the Wallet Tracker</h1>
-    <h2>How does this website work?</h2>
-    <button class="info-button" onclick="openFullPage()">Click Me Brah</button>
 
-    <!-- Dark Mode Toggle -->
-    <button class="info-button" id="darkModeToggle"
-        style="position: absolute; top: 10px; right: 10px; background-color: #333; color: white;"
-        onclick="toggleDarkMode()">🌙 Dark Mode</button>
+    <!-- Navigation Bar -->
+    <nav class="nav-bar">
+        <button class="nav-item active" onclick="navigateTo('home')">
+            <i>🏠</i> <span>Home</span>
+        </button>
+        <button class="nav-item" onclick="navigateTo('about')">
+            <i>ℹ️</i> <span>About</span>
+        </button>
+        <button class="nav-item" onclick="navigateTo('contact')">
+            <i>📧</i> <span>Contact</span>
+        </button>
+        <!-- Dark Mode Toggle embedded in nav for Desktop, or separate? Let's keep separate absolute for now or add to nav. Adding to nav is cleaner. -->
+        <button class="nav-item" onclick="toggleDarkMode()">
+            <i id="navDarkModeIcon">🌙</i> <span>Theme</span>
+        </button>
+        <button class="nav-item" style="color: var(--primary-color); font-weight: bold;" onclick="openWallet()">
+            <i>💰</i> <span>Wallet</span>
+        </button>
+    </nav>
 
-    <!-- Full Page Overlay -->
+    <div id="app-container">
+
+        <!-- HOME PAGE -->
+        <section id="home-page" class="page-section active">
+            <div style="text-align: center; padding: 40px 0;">
+                <h1 id="welcome-title">Welcome to Wallet Tracker</h1>
+                <p>Track your expenses, set goals, and master your finances with our premium tool.</p>
+                <br>
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="openWallet()">Launch Wallet App</button>
+                    <button class="btn btn-secondary" onclick="navigateTo('about')">Learn More</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Why use this?</h2>
+                <button class="btn btn-accent" onclick="openFullPage()">See Full Feature Tour</button>
+            </div>
+
+            <div class="card">
+                <h3>Quick Tips</h3>
+                <ul>
+                    <li>Use the <strong>Wallet</strong> tab to manage transactions.</li>
+                    <li>Data is saved automatically to your device.</li>
+                    <li>Switch to <strong>Dark Mode</strong> for night viewing.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ABOUT PAGE -->
+        <section id="about-page" class="page-section">
+            <h1>About Us</h1>
+            <div class="card">
+                <p>We are dedicated to providing the simplest, most effective financial tracking tools for students and
+                    professionals alike.</p>
+                <p>This application was built with modern web technologies to ensure speed, privacy, and a beautiful
+                    user experience.</p>
+            </div>
+            <div class="card">
+                <h3>Our Mission</h3>
+                <p>To make personal finance accessible and engaging.</p>
+            </div>
+            <button class="btn btn-secondary" onclick="navigateTo('home')">← Back Home</button>
+        </section>
+
+        <!-- CONTACT PAGE -->
+        <section id="contact-page" class="page-section">
+            <h1>Get in Touch</h1>
+            <div class="card">
+                <p>Have questions or feedback? We'd love to hear from you!</p>
+                <form onsubmit="event.preventDefault(); sendEmail();">
+                    <input type="text" id="contactName" placeholder="Your Name" required>
+                    <input type="email" id="contactEmail" placeholder="Your Email" required>
+                    <textarea id="contactMessage" placeholder="Your Message"
+                        style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--input-text); min-height: 100px; margin-bottom: 10px;"
+                        required></textarea>
+                    <button class="btn btn-primary" type="submit">Send Message</button>
+                </form>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast"
+        style="visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #333; color: #fff; text-align: center; border-radius: 2px; padding: 16px; position: fixed; z-index: 3000; left: 50%; bottom: 30px; font-size: 17px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+        Message Sent Successfully!
+    </div>
+
+    <!-- FULL PAGE OVERLAY (Feature Tour) -->
     <div class="full-page-overlay" id="fullPageOverlay">
-        <button class="full-page-close-btn" onclick="closeFullPage()">Close ×</button>
+        <button class="close-btn" style="position:fixed; top:20px; right:20px; color:red;"
+            onclick="closeFullPage()">×</button>
         <div class="full-page-content">
-            <h1>🎉 Welcome to the Wallet Tracker info page! 🎉</h1>
-            <p style="font-size: 1.2em;">This is a whole new view that takes up the entire screen.</p>
-            <p>You can put anything here: charts, more complex forms, or just a nice message.</p>
+            <h1>🎉 The Feature Tour 🎉</h1>
+            <p>Experience the smooth animations and distinct layout.</p>
             <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3hveDg5Z3c3Z3c3Z3c3Z3c3Z3c3Z3c3Z3c3Z3c3Z3c3/26tOZ42Mg6pbTUPhw/giphy.gif"
-                alt="Cool GIF" style="max-width: 100%; border-radius: 10px; margin-top: 20px;">
+                alt="Cool GIF"
+                style="max-width: 100%; border-radius: 12px; margin-top: 20px; box-shadow: var(--shadow);">
+            <br><br>
+            <button class="btn btn-secondary" onclick="closeFullPage()">Close Tour</button>
         </div>
     </div>
+
+    <!-- POPUP OVERLAY (Info) -->
     <div class="popup-overlay" id="popupOverlay" onclick="closePopupOnOverlay(event)">
         <div class="popup-box">
             <button class="close-btn" onclick="closePopup()">×</button>
-            <h2>How does this website work?</h2>
-            <p>This website works by:</p>
-            <ul>
-                <li> </li>
-                <li>Images and videos</li>
-                <li>Forms and inputs</li>
-                <li>Links and buttons</li>
-            </ul>
-            <p><strong>Click the × or outside the box to close.</strong></p>
+            <h2>How it works</h2>
+            <p>Simple, fast, and persistent.</p>
+            <button class="btn btn-primary" onclick="closePopup()">Got it</button>
         </div>
     </div>
 
-    <!-- Wallet Button -->
-    <!-- Moved to bottom nav -->
 
-    <!-- Wallet Overlay -->
+    <!-- WALLET OVERLAY (The App) -->
     <div class="popup-overlay" id="walletOverlay" onclick="closeWalletOnOverlay(event)">
         <div class="popup-box" style="max-width: 600px;">
             <button class="close-btn" onclick="closeWallet()">×</button>
 
             <!-- Login Section -->
             <div id="authSection" style="text-align: center; padding: 20px;">
-                <!-- Login Form -->
                 <div id="loginForm">
                     <h2>🔐 Login</h2>
-                    <input type="text" id="loginUsername" placeholder="Username"
-                        style="padding: 10px; margin: 10px; width: 80%;">
-                    <br>
-                    <input type="password" id="loginPassword" placeholder="Password"
-                        style="padding: 10px; margin: 10px; width: 80%;">
-                    <br>
-                    <button onclick="login()"
-                        style="padding: 10px 20px; background-color: #2e7d32; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px;">Login</button>
-                    <p style="margin-top: 15px;">Don't have an account? <a href="#" onclick="showSignUp()"
-                            style="color: #1976d2;">Sign Up</a></p>
+                    <input type="text" id="loginUsername" placeholder="Username">
+                    <input type="password" id="loginPassword" placeholder="Password">
+                    <button onclick="login()" class="btn btn-primary"
+                        style="width:100%; margin-top:10px;">Login</button>
+                    <p style="margin-top: 15px;">Don't have an account? <span onclick="showSignUp()"
+                            style="color: var(--primary-color); cursor: pointer; font-weight: bold;">Sign Up</span></p>
                 </div>
 
-                <!-- Sign Up Form -->
                 <div id="signupForm" style="display: none;">
                     <h2>📝 Sign Up</h2>
-                    <input type="text" id="signupUsername" placeholder="Choose Username"
-                        style="padding: 10px; margin: 10px; width: 80%;">
-                    <br>
-                    <input type="password" id="signupPassword" placeholder="Choose Password"
-                        style="padding: 10px; margin: 10px; width: 80%;">
-                    <br>
-                    <button onclick="signup()"
-                        style="padding: 10px 20px; background-color: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px;">Create
+                    <input type="text" id="signupUsername" placeholder="Choose Username">
+                    <input type="password" id="signupPassword" placeholder="Choose Password">
+                    <button onclick="signup()" class="btn btn-primary" style="width:100%; margin-top:10px;">Create
                         Account</button>
-                    <p style="margin-top: 15px;">Already have an account? <a href="#" onclick="showLogin()"
-                            style="color: #2e7d32;">Login</a></p>
+                    <p style="margin-top: 15px;">Already have an account? <span onclick="showLogin()"
+                            style="color: var(--primary-color); cursor: pointer; font-weight: bold;">Login</span></p>
                 </div>
             </div>
 
-            <!-- Setup Section (Hidden by default) -->
+            <!-- Setup Section -->
             <div id="setupSection" style="display: none; text-align: center; padding: 20px;">
                 <h2>💰 Welcome!</h2>
-                <p>Please set your starting balance to begin.</p>
-                <input type="number" id="initialBalanceInput" placeholder="Enter starting balance"
-                    style="padding: 10px; margin: 10px; width: 80%;">
-                <br>
-                <button onclick="setBalance()"
-                    style="padding: 10px 20px; background-color: #2e7d32; color: white; border: none; border-radius: 4px; cursor: pointer;">Set
-                    Balance</button>
+                <p>Please set your starting balance.</p>
+                <input type="number" id="initialBalanceInput" placeholder="Enter starting balance">
+                <button onclick="setBalance()" class="btn btn-primary" style="margin-top:10px;">Set Balance</button>
             </div>
 
-            <!-- Wallet Content (Hidden by default) -->
+            <!-- Wallet Content -->
             <div id="walletContent" style="display: none;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h2 style="margin: 0;">💰 My Wallet Tracker</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">💰 Wallet</h2>
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <span id="userDisplay" style="font-weight: bold; color: #555;"></span>
+                        <span id="userDisplay" style="font-weight: bold; opacity: 0.7;"></span>
                         <button onclick="logout()"
-                            style="padding: 5px 10px; background-color: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Logout</button>
+                            style="padding: 5px 10px; background-color: #ef5350; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Logout</button>
                     </div>
                 </div>
 
-                <!-- Balance Section -->
-                <div class="theme-card"
-                    style="text-align: center; margin-bottom: 20px; padding: 15px; border-radius: 8px;">
-                    <h3>Current Balance</h3>
-                    <h1 id="displayBalance" style="color: #2e7d32; margin: 10px 0;">$0.00</h1>
+                <!-- Balance Card -->
+                <div class="card"
+                    style="text-align: center; background: linear-gradient(135deg, var(--card-bg), var(--highlight-bg)); border: none;">
+                    <h3 style="margin-top:0;">Current Balance</h3>
+                    <h1 id="displayBalance" style="color: var(--primary-color); margin: 10px 0;">$0.00</h1>
                 </div>
 
-                <!-- Transaction Section -->
-                <div class="theme-border-top" style="margin-bottom: 20px; padding-top: 15px;">
+                <!-- Transaction Form -->
+                <div class="theme-border-top">
                     <h3>Add Transaction</h3>
                     <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                        <select id="transactionType" style="padding: 8px; flex: 1;">
-                            <option value="gain">✚ Gain Money (Income)</option>
-                            <option value="spend">━ Spend Money (Expense)</option>
+                        <select id="transactionType" style="flex: 1;">
+                            <option value="gain">✚ Gain</option>
+                            <option value="spend">━ Spend</option>
                         </select>
-                        <select id="transactionSource" style="padding: 8px; flex: 1;">
+                        <select id="transactionSource" style="flex: 1;">
                             <option value="cash">💵 Cash</option>
                             <option value="bank">🏦 Bank</option>
                         </select>
-                        <input type="number" id="transactionAmount" placeholder="Amount ($)"
-                            style="padding: 8px; width: 80px;">
+                        <input type="number" id="transactionAmount" placeholder="$" style="width: 80px;">
                     </div>
-                    <input type="text" id="transactionReason" placeholder="Why? (e.g., Sold game, Lunch)"
-                        style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box;">
-                    <button onclick="addTransaction()"
-                        style="width: 100%; padding: 10px; background-color: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer;">Add
+                    <input type="text" id="transactionReason" placeholder="Description (e.g. Lunch)">
+                    <button onclick="addTransaction()" class="btn btn-primary" style="width: 100%;">Add
                         Transaction</button>
                 </div>
 
-                <!-- Savings Goal Section -->
-                <div class="theme-border-top" style="padding-top: 15px;">
-                    <h3>🎯 Savings Goal</h3>
-                    <div id="goalDisplay" class="theme-highlight"
-                        style="display: none; margin-bottom: 10px; padding: 10px; border-radius: 4px;">
+                <!-- Goals -->
+                <div class="theme-border-top">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin:0;">🎯 Goal</h3>
+                        <button
+                            onclick="document.getElementById('setGoalSection').style.display = 'block'; document.getElementById('goalDisplay').style.display='none';"
+                            style="border:none; background:none; color:var(--primary-color); cursor:pointer;">Edit</button>
+                    </div>
+
+                    <div id="goalDisplay" class="theme-highlight" style="display: none; margin-top: 10px;">
                         <strong>Goal:</strong> <span id="goalNameDisplay"></span><br>
                         <strong>Target:</strong> $<span id="goalAmountDisplay"></span>
                     </div>
-                    <div id="setGoalSection">
-                        <input type="text" id="goalNameInput" placeholder="Goal Name (e.g., PS5)"
-                            style="width: 100%; padding: 8px; margin-bottom: 5px; box-sizing: border-box;">
-                        <input type="number" id="goalAmountInput" placeholder="Target Amount ($)"
-                            style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box;">
-                        <button onclick="setGoal()"
-                            style="width: 100%; padding: 10px; background-color: #ed6c02; color: white; border: none; border-radius: 4px; cursor: pointer;">Set
-                            Goal</button>
+                    <div id="setGoalSection" style="margin-top: 10px;">
+                        <input type="text" id="goalNameInput" placeholder="Goal Name">
+                        <input type="number" id="goalAmountInput" placeholder="Target Amount">
+                        <button onclick="setGoal()" class="btn btn-accent" style="width: 100%;">Set Goal</button>
                     </div>
                 </div>
 
-                <!-- History Button -->
-                <div style="margin-top: 15px; text-align: center;">
-                    <button onclick="openHistory()"
-                        style="background: #607d8b; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">📜
-                        View Transaction History</button>
+                <!-- History Trigger -->
+                <div style="margin-top: 20px; text-align: center;">
+                    <button onclick="openHistory()" class="btn btn-secondary">📜 View History</button>
                 </div>
             </div>
         </div>
@@ -404,27 +634,19 @@
     <div class="popup-overlay" id="historyOverlay" onclick="closeHistoryOnOverlay(event)">
         <div class="popup-box" style="max-width: 600px;">
             <button class="close-btn" onclick="closeHistory()">×</button>
-            <h2>📜 Transaction History</h2>
-            <div style="text-align: center; margin-bottom: 10px;">
-                <button onclick="undoLastTransaction()"
-                    style="background: #ff9800; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">↩️
-                    Undo Last Transaction</button>
+            <h2>Transaction History</h2>
+            <div style="text-align: center; margin-bottom: 15px;">
+                <button onclick="undoLastTransaction()" class="btn btn-accent"
+                    style="padding: 8px 16px; font-size: 0.9rem;">↩️ Undo Last</button>
             </div>
-            <div id="historyList" style="max-height: 300px; overflow-y: auto; text-align: left;">
-                <!-- Transactions will be added here -->
-                <p style="text-align: center; color: #999;">No transactions yet.</p>
+            <div id="historyList" style="max-height: 400px; overflow-y: auto;">
+                <p style="text-align: center; opacity: 0.6;">No transactions yet.</p>
             </div>
         </div>
-    </div>
-
-
-    <!-- Bottom Navigation -->
-    <div class="bottom-nav">
-        <button class="info-button" onclick="openPopup()">📖 Show Info</button>
-        <button class="info-button" style="background-color: #2e7d32;" onclick="openWallet()">💰 Open Wallet</button>
     </div>
 
     <script src="script.js"></script>
 </body>
 
 </html>
+The above content shows the entire, complete file contents of the requested file.
