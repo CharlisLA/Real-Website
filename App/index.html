@@ -20,7 +20,7 @@
             --card-bg: #ffffff;
             --highlight-bg: #e3f2fd;
             --border-color: #e0e0e0;
-            --primary-color: #2e7d32;
+            --primary-color: #af1b08;
             --nav-bg: #ffffff;
             --nav-text: #555555;
             --nav-active: #2e7d32;
@@ -139,6 +139,24 @@
             transform: translateY(-2px);
         }
 
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 4px;
+            transition: 0.2s;
+        }
+
+        /* Filter to make icons look like the text color (approximate) */
+        /* By default SVGs are black. If we want them to follow theme: */
+        body.dark-mode .nav-icon {
+            filter: invert(1);
+        }
+
+        .nav-item.active .nav-icon {
+            /* This filter attempts to make it green for active state */
+            filter: sepia(100%) hue-rotate(90deg) saturate(400%);
+        }
+
         /* Desktop Nav Styling */
         @media (min-width: 768px) {
             .nav-bar {
@@ -220,12 +238,12 @@
         }
 
         .btn-secondary {
-            background-color: #607d8b;
+            background-color: #016fff;
             color: white;
         }
 
         .btn-accent {
-            background-color: #ff9800;
+            background-color: #166b30;
             color: white;
         }
 
@@ -409,6 +427,46 @@
         .hidden {
             display: none !important;
         }
+
+        /* --- HOUSE ICON WINK --- */
+        .house-wink-icon {
+            width: 28px;
+            height: 28px;
+            background-image: url('assets/icons/house-face-open.svg');
+            /* default state */
+            background-size: contain;
+            background-repeat: no-repeat;
+            transition: 0.2s;
+            /* Invert for dark mode if body has dark-mode, similar to .nav-icon */
+            filter: var(--icon-filter, none);
+        }
+
+        body.dark-mode .house-wink-icon {
+            filter: invert(1);
+        }
+
+        /* WINK animation: open → wink → open */
+        .house-wink-icon.wink {
+            animation: houseWink 0.6s ease-in-out;
+        }
+
+        @keyframes houseWink {
+            0% {
+                background-image: url('assets/icons/house-face-open.svg');
+            }
+
+            30% {
+                background-image: url('assets/icons/house-face-wink.svg');
+            }
+
+            70% {
+                background-image: url('assets/icons/house-face-wink.svg');
+            }
+
+            100% {
+                background-image: url('assets/icons/house-face-open.svg');
+            }
+        }
     </style>
 </head>
 
@@ -416,21 +474,22 @@
 
     <!-- Navigation Bar -->
     <nav class="nav-bar">
-        <button class="nav-item active" onclick="navigateTo('home')">
-            <i>🏠</i> <span>Home</span>
+        <button class="nav-item active" onclick="navigateTo('home'); triggerWink();">
+            <div class="house-wink-icon"></div>
+            <span>Home</span>
         </button>
         <button class="nav-item" onclick="navigateTo('about')">
-            <i>ℹ️</i> <span>About</span>
+            <img src="assets/icons/about.svg" alt="About" class="nav-icon"> <span>About</span>
         </button>
         <button class="nav-item" onclick="navigateTo('contact')">
-            <i>📧</i> <span>Contact</span>
+            <img src="assets/icons/contact.svg" alt="Contact" class="nav-icon"> <span>Contact</span>
         </button>
-        <!-- Dark Mode Toggle embedded in nav for Desktop, or separate? Let's keep separate absolute for now or add to nav. Adding to nav is cleaner. -->
-        <button class="nav-item" onclick="toggleDarkMode()">
-            <i id="navDarkModeIcon">🌙</i> <span>Theme</span>
+        <!-- Dark Mode Toggle -->
+        <button class="nav-item" id="themeToggleBtn" onclick="toggleDarkMode()">
+            <img src="assets/icons/moon.svg" alt="Theme" class="nav-icon" id="navDarkModeIcon"> <span>Theme</span>
         </button>
         <button class="nav-item" style="color: var(--primary-color); font-weight: bold;" onclick="openWallet()">
-            <i>💰</i> <span>Wallet</span>
+            <img src="assets/icons/wallet.svg" alt="Wallet" class="nav-icon"> <span>Wallet</span>
         </button>
     </nav>
 

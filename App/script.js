@@ -221,15 +221,12 @@ function saveUserData() {
 // Dark Mode Toggle
 function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
-    const btn = document.getElementById('darkModeToggle');
+    const icon = document.getElementById('navDarkModeIcon');
+
     if (document.body.classList.contains('dark-mode')) {
-        btn.innerText = '☀️ Light Mode';
-        btn.style.backgroundColor = '#f1c40f';
-        btn.style.color = '#333';
+        if (icon) icon.src = 'assets/icons/sun.svg';
     } else {
-        btn.innerText = '🌙 Dark Mode';
-        btn.style.backgroundColor = '#333';
-        btn.style.color = 'white';
+        if (icon) icon.src = 'assets/icons/moon.svg';
     }
 }
 
@@ -569,5 +566,21 @@ function undoLastTransaction() {
     // The most recent transaction is always at index 0 because we unshift()
     const lastTransactionId = transactions[0].id;
     deleteTransaction(lastTransactionId);
+}
+
+// ===========================================
+// ANIMATION FUNCTIONS
+// ===========================================
+
+function triggerWink() {
+    const icon = document.querySelector('.house-wink-icon');
+    if (!icon) return;
+
+    icon.classList.add('wink');
+
+    // remove after animation ends
+    setTimeout(() => {
+        icon.classList.remove('wink');
+    }, 600);
 }
 
