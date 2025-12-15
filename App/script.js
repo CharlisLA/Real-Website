@@ -152,7 +152,15 @@ let savingsGoal = {
     amount: 0
 };
 let transactions = []; // Store transaction history
+let jobSettings = {
+    hourlyRate: 0,
+    weekdayHours: 0,
+    weekend: false,
+    weekendHours: 0
+};
+let lastPaycheck = 0; // Timestamp
 let currentUser = null; // Track logged in user
+let spendingChart = null; // Chart instance
 
 // Check for logged in user on startup
 document.addEventListener('DOMContentLoaded', () => {
@@ -161,7 +169,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (savedUser && users[savedUser]) {
         currentUser = savedUser;
-        document.getElementById('userDisplay').innerText = `👤 ${currentUser}`;
+        // User Badge Update
+        updateUserBadge();
+
         loadUserData(currentUser);
 
         // Show wallet immediately if balance is set
@@ -169,12 +179,14 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('setupSection').style.display = 'none';
             document.getElementById('walletContent').style.display = 'block';
+            renderChart(); // Render chart on load
         } else {
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('walletContent').style.display = 'none';
             document.getElementById('setupSection').style.display = 'block';
         }
     }
+    updateDailyDashboard();
 });
 
 // Load data from LocalStorage on startup
@@ -185,6 +197,8 @@ function loadUserData(username) {
         currentBalance = userData.balance || 0;
         transactions = userData.transactions || [];
         savingsGoal = userData.goal || { name: "", amount: 0 };
+        jobSettings = userData.jobSettings || { hourlyRate: 0, weekdayHours: 0, weekend: false, weekendHours: 0 };
+        lastPaycheck = userData.lastPaycheck || 0;
 
         // Update UI
         updateBalanceDisplay();
@@ -197,6 +211,15 @@ function loadUserData(username) {
             document.getElementById('goalDisplay').style.display = 'none';
             document.getElementById('setGoalSection').style.display = 'block';
         }
+
+        // Initialize Job UI
+        document.getElementById('hourlyRateInput').value = jobSettings.hourlyRate || '';
+        document.getElementById('weekdayHoursInput').value = jobSettings.weekdayHours || '';
+        document.getElementById('weekendWorkDetailsCheckbox').checked = jobSettings.weekend;
+        document.getElementById('weekendHoursInput').value = jobSettings.weekendHours || '';
+        toggleWeekendInput(); // Update visibility
+        calculateJobEarnings(); // Update calculation display
+        checkPaycheckStatus(); // Check button state
     }
 }
 
@@ -213,9 +236,14 @@ function saveUserData() {
         balance: currentBalance,
         transactions: transactions,
         goal: savingsGoal,
-        balanceSet: existingUser.balanceSet || false // Persist the flag
+        jobSettings: jobSettings,
+        lastPaycheck: lastPaycheck,
+        balanceSet: existingUser.balanceSet || false,
+        avatar: existingUser.avatar || null // Persist avatar
     };
     localStorage.setItem('walletUsers', JSON.stringify(users));
+    updateDailyDashboard();
+    updateUserBadge(); // Ensure badge is always in sync
 }
 
 // Dark Mode Toggle
@@ -247,7 +275,9 @@ function openWallet() {
         if (users[currentUser] && users[currentUser].balanceSet) {
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('setupSection').style.display = 'none';
+            document.getElementById('setupSection').style.display = 'none';
             document.getElementById('walletContent').style.display = 'block';
+            renderChart(); // Render chart when opening wallet
         } else {
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('walletContent').style.display = 'none';
@@ -256,10 +286,80 @@ function openWallet() {
     }
 }
 
-// Switch to Sign Up Form
 function showSignUp() {
     document.getElementById('loginForm').style.display = 'none';
     document.getElementById('signupForm').style.display = 'block';
+}
+
+function toggleSettings() {
+    const settings = document.getElementById('settingsSection');
+    if (settings.style.display === 'none') {
+        settings.style.display = 'block';
+        loadSettingsProfile();
+    } else {
+        settings.style.display = 'none';
+    }
+}
+
+function loadSettingsProfile() {
+    if (!currentUser) return;
+    document.getElementById('settings-username').innerText = '@' + currentUser;
+    const users = JSON.parse(localStorage.getItem('walletUsers')) || {};
+    if (users[currentUser] && users[currentUser].avatar) {
+        document.getElementById('wallet-avatar-preview').src = users[currentUser].avatar;
+    }
+}
+
+function handleAvatarUpload(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+
+        // Limit size to 500KB
+        if (file.size > 500000) {
+            alert("File is too large! Please upload user an image under 500KB.");
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            const base64Image = e.target.result;
+
+            // Update Preview
+            document.getElementById('wallet-avatar-preview').src = base64Image;
+
+            // Save to User
+            const users = JSON.parse(localStorage.getItem('walletUsers')) || {};
+            if (users[currentUser]) {
+                users[currentUser].avatar = base64Image;
+                localStorage.setItem('walletUsers', JSON.stringify(users));
+                updateUserBadge(); // Real-time update
+                showToast("Profile picture updated!");
+            }
+        }
+
+        reader.readAsDataURL(file);
+    }
+}
+
+function updateUserBadge() {
+    const badge = document.getElementById('user-badge');
+    const nameEl = document.getElementById('user-name-badge');
+    const imgEl = document.getElementById('user-avatar-small');
+
+    if (currentUser) {
+        badge.style.display = 'flex';
+        nameEl.innerText = currentUser;
+
+        const users = JSON.parse(localStorage.getItem('walletUsers')) || {};
+        if (users[currentUser] && users[currentUser].avatar) {
+            imgEl.src = users[currentUser].avatar;
+        } else {
+            imgEl.src = 'assets/icons/house-face-open.svg'; // Default
+        }
+    } else {
+        badge.style.display = 'none';
+    }
 }
 
 // Switch to Login Form
@@ -284,15 +384,17 @@ function login() {
 
     if (users[username] && users[username].password === password) {
         currentUser = username;
-        document.getElementById('userDisplay').innerText = `👤 ${currentUser}`;
-
+        // Badge update
+        updateUserBadge();
         loadUserData(username);
 
         // Check if balance is set
         if (users[username].balanceSet) {
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('setupSection').style.display = 'none';
+            document.getElementById('setupSection').style.display = 'none';
             document.getElementById('walletContent').style.display = 'block';
+            renderChart();
         } else {
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('walletContent').style.display = 'none';
@@ -353,6 +455,8 @@ function logout() {
     currentBalance = 0;
     transactions = [];
     savingsGoal = { name: "", amount: 0 };
+    jobSettings = { hourlyRate: 0, weekdayHours: 0, weekend: false, weekendHours: 0 };
+    lastPaycheck = 0;
 
     document.getElementById('walletContent').style.display = 'none';
     document.getElementById('setupSection').style.display = 'none';
@@ -361,6 +465,8 @@ function logout() {
 
     // Clear login state
     localStorage.removeItem('loggedInUser');
+    updateUserBadge(); // Hide badge
+    updateDailyDashboard(); // Clear Dashboard
 }
 
 // Close the Wallet Popup
@@ -399,6 +505,7 @@ function setBalance() {
         // Transition to Wallet Content
         document.getElementById('setupSection').style.display = 'none';
         document.getElementById('walletContent').style.display = 'block';
+        renderChart();
     } else {
         alert("Please enter a valid number for the balance.");
     }
@@ -426,12 +533,13 @@ function addTransaction() {
     if (type === 'gain') {
         currentBalance += amount;
         alert(`You gained $${amount} from: ${reason} (${source === 'bank' ? 'Bank' : 'Cash'})`);
-        addHistoryItem(reason, amount, 'gain', source);
+        addHistoryItem(reason, amount, 'gain', source, 'General'); // Default category for gain
     } else if (type === 'spend') {
+        const category = document.getElementById('transactionCategory').value;
         if (currentBalance >= amount) {
             currentBalance -= amount;
             alert(`You spent $${amount} on: ${reason} (${source === 'bank' ? 'Bank' : 'Cash'})`);
-            addHistoryItem(reason, amount, 'spend', source);
+            addHistoryItem(reason, amount, 'spend', source, category);
         } else {
             alert("Insufficient funds! You cannot spend more than you have.");
             return;
@@ -440,6 +548,8 @@ function addTransaction() {
 
     updateBalanceDisplay();
     saveUserData();
+    renderChart(); // Update chart
+    updateDailyDashboard(); // Update home screen
 
     // Clear inputs
     amountInput.value = '';
@@ -475,13 +585,14 @@ function updateBalanceDisplay() {
 }
 
 // History Functions
-function addHistoryItem(reason, amount, type, source) {
+function addHistoryItem(reason, amount, type, source, category = 'General') {
     const transaction = {
         id: Date.now(),
         reason: reason,
         amount: amount,
         type: type, // 'gain', 'spend', 'set'
         source: source, // 'cash', 'bank'
+        category: category,
         date: new Date().toLocaleString()
     };
     transactions.unshift(transaction);
@@ -516,6 +627,7 @@ function openHistory() {
                 <small>${t.date} • ${sourceIcon} ${t.source.toUpperCase()}</small>
             </div>
             <div style="display:flex; align-items:center;">
+                <span style="font-size:0.8rem; margin-right:10px; background:#f0f0f0; padding:2px 6px; border-radius:4px; color:#555;">${t.category || 'General'}</span>
                 <span style="font-weight:bold; margin-right: 10px;">$${t.amount.toFixed(2)}</span>
                 <button onclick="deleteTransaction(${t.id})">🗑️</button>
             </div>
@@ -553,6 +665,8 @@ function deleteTransaction(id) {
         transactions.splice(index, 1);
         updateBalanceDisplay();
         saveUserData();
+        renderChart();
+        updateDailyDashboard();
     }
 }
 
@@ -584,3 +698,242 @@ function triggerWink() {
     }, 600);
 }
 
+
+// ===========================================
+// CHART & DASHBOARD FUNCTIONS
+// ===========================================
+
+function renderChart() {
+    const ctx = document.getElementById('spendingChart');
+    if (!ctx) return;
+
+    // Calculate Spending by Category
+    const categories = {};
+    transactions.forEach(t => {
+        if (t.type === 'spend') {
+            const cat = t.category || 'General';
+            categories[cat] = (categories[cat] || 0) + t.amount;
+        }
+    });
+
+    const labels = Object.keys(categories);
+    const data = Object.values(categories);
+    const colors = ['#e57373', '#ba68c8', '#64b5f6', '#4db6ac', '#ffd54f', '#ff8a65', '#90a4ae'];
+
+    if (spendingChart) {
+        spendingChart.destroy();
+    }
+
+    // Don't show chart if no spending
+    if (labels.length === 0) {
+        // Create a placeholder
+        spendingChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['No Spending Yet'],
+                datasets: [{
+                    data: [1],
+                    backgroundColor: ['#e0e0e0']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+        return;
+    }
+
+    spendingChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: colors.slice(0, labels.length)
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+function updateDailyDashboard() {
+    // Calculate today's spend
+    const today = new Date().toLocaleDateString();
+    let spentToday = 0;
+
+    if (currentUser && transactions) {
+        transactions.forEach(t => {
+            if (t.type === 'spend' && new Date(t.id).toLocaleDateString() === today) {
+                spentToday += t.amount;
+            }
+        });
+
+        const spendEl = document.getElementById('daily-spend-display');
+        const balanceEl = document.getElementById('daily-balance-display');
+
+        if (spendEl) spendEl.innerText = '$' + spentToday.toFixed(2);
+        if (balanceEl) balanceEl.innerText = '$' + currentBalance.toFixed(2);
+    } else {
+        const spendEl = document.getElementById('daily-spend-display');
+        const balanceEl = document.getElementById('daily-balance-display');
+        if (spendEl) spendEl.innerText = '$0.00';
+        if (balanceEl) balanceEl.innerText = '$0.00';
+    }
+}
+
+// ===========================================
+// JOB & INCOME FUNCTIONS
+// ===========================================
+
+function toggleJobPanel() {
+    const panel = document.getElementById('jobSection');
+    const settings = document.getElementById('settingsSection');
+
+    // Close settings if open
+    settings.style.display = 'none';
+
+    if (panel.style.display === 'none') {
+        panel.style.display = 'block';
+    } else {
+        panel.style.display = 'none';
+    }
+}
+
+function toggleWeekendInput() {
+    const isChecked = document.getElementById('weekendWorkDetailsCheckbox').checked;
+    const container = document.getElementById('weekendInputContainer');
+    if (isChecked) {
+        container.style.display = 'block';
+    } else {
+        container.style.display = 'none';
+    }
+    calculateJobEarnings();
+}
+
+function calculateJobEarnings() {
+    const rate = parseFloat(document.getElementById('hourlyRateInput').value) || 0;
+    const dayHours = parseFloat(document.getElementById('weekdayHoursInput').value) || 0;
+    const weekendHours = parseFloat(document.getElementById('weekendHoursInput').value) || 0;
+    const isWeekend = document.getElementById('weekendWorkDetailsCheckbox').checked;
+
+    // Save to localized state
+    jobSettings.hourlyRate = rate;
+    jobSettings.weekdayHours = dayHours;
+    jobSettings.weekend = isWeekend;
+    jobSettings.weekendHours = isWeekend ? weekendHours : 0;
+
+    // Calculate
+    const weeklyBase = (dayHours * 5 * rate);
+    const weekendBase = isWeekend ? (weekendHours * 2 * rate) : 0;
+    const weeklyTotal = weeklyBase + weekendBase;
+
+    // Monthly (approx 4.33 weeks)
+    const monthlyTotal = weeklyTotal * 4.33;
+
+    // Display
+    document.getElementById('calcWeeklyEarn').innerText = '$' + weeklyTotal.toFixed(2);
+    document.getElementById('calcMonthlyEarn').innerText = '$' + monthlyTotal.toFixed(2);
+
+    // Save implicitly if user is editing
+    if (currentUser) {
+        saveUserData();
+    }
+
+    checkPaycheckStatus(weeklyTotal);
+}
+
+function checkPaycheckStatus(weeklyAmount = null) {
+    if (weeklyAmount === null) {
+        // Recalculate if not provided to be safe
+        const rate = jobSettings.hourlyRate || 0;
+        const dayHours = jobSettings.weekdayHours || 0;
+        const weekendHours = jobSettings.weekendHours || 0;
+        const weeklyBase = (dayHours * 5 * rate);
+        const weekendBase = jobSettings.weekend ? (weekendHours * 2 * rate) : 0;
+        weeklyAmount = weeklyBase + weekendBase;
+    }
+
+    const btn = document.getElementById('collectPayBtn');
+    const msg = document.getElementById('paycheckTimer');
+
+    if (weeklyAmount <= 0) {
+        btn.disabled = true;
+        btn.style.opacity = "0.5";
+        btn.style.cursor = "not-allowed";
+        msg.innerText = "Please set your hours and rate first.";
+        return;
+    }
+
+    const now = Date.now();
+    const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
+    // const oneWeekMs = 10000; // Debug: 10 seconds for testing
+
+    if (lastPaycheck === 0) {
+        // Never collected
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        btn.style.cursor = "pointer";
+        msg.innerText = "You can collect your first paycheck now!";
+        msg.style.color = "var(--primary-color)";
+    } else if (now - lastPaycheck >= oneWeekMs) {
+        // Time passed
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        btn.style.cursor = "pointer";
+        msg.innerText = "Paycheck is ready!";
+        msg.style.color = "var(--primary-color)";
+    } else {
+        // Still waiting
+        btn.disabled = true;
+        btn.style.opacity = "0.5";
+        btn.style.cursor = "not-allowed";
+
+        // Calculate remaining days
+        const diff = oneWeekMs - (now - lastPaycheck);
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+        msg.innerText = `Next paycheck available in: ${days}d ${hours}h`;
+        msg.style.color = "#666";
+    }
+}
+
+function collectPaycheck() {
+    const rate = jobSettings.hourlyRate || 0;
+    const dayHours = jobSettings.weekdayHours || 0;
+    const weekendHours = jobSettings.weekendHours || 0;
+    const weeklyBase = (dayHours * 5 * rate);
+    const weekendBase = jobSettings.weekend ? (weekendHours * 2 * rate) : 0;
+    const totalPay = weeklyBase + weekendBase;
+
+    if (totalPay <= 0) return;
+
+    // Update Balance
+    currentBalance += totalPay;
+
+    // Update timestamp
+    lastPaycheck = Date.now();
+
+    // Add transaction
+    // 'Income' category is not in the default list but we can add it or just pass it as string
+    addHistoryItem('Weekly Paycheck', totalPay, 'gain', 'bank', 'Income');
+
+    // Save
+    saveUserData();
+
+    // Update UI
+    updateBalanceDisplay();
+    renderChart();
+    updateDailyDashboard();
+    checkPaycheckStatus(totalPay);
+
+    // Celebrate
+    showToast(`💰 Cha-ching! Collected $${totalPay.toFixed(2)}`);
+    triggerWink();
+}

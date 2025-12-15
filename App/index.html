@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-color: #f8f9fa;
@@ -20,7 +22,7 @@
             --card-bg: #ffffff;
             --highlight-bg: #e3f2fd;
             --border-color: #e0e0e0;
-            --primary-color: #af1b08;
+            --primary-color: #2e7d32;
             --nav-bg: #ffffff;
             --nav-text: #555555;
             --nav-active: #2e7d32;
@@ -467,10 +469,86 @@
                 background-image: url('assets/icons/house-face-open.svg');
             }
         }
+
+        /* User Badge */
+        #user-badge {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: auto;
+            display: none;
+            /* Shown when logged in */
+            align-items: center;
+            gap: 10px;
+            background: var(--nav-bg);
+            padding: 8px 16px;
+            border-radius: 50px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        #user-badge:hover {
+            transform: translateY(-2px);
+        }
+
+        #user-avatar-small {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-color);
+        }
+
+        #user-name-badge {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        /* Avatar Upload */
+        .avatar-upload {
+            margin: 20px auto;
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-color);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .avatar-edit-btn {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
     </style>
 </head>
 
 <body>
+
+    <!-- User Badge (Top Right) -->
+    <div id="user-badge" onclick="openWallet()">
+        <img id="user-avatar-small" src="assets/icons/house-face-open.svg" alt="User">
+        <span id="user-name-badge">User</span>
+    </div>
 
     <!-- Navigation Bar -->
     <nav class="nav-bar">
@@ -498,9 +576,26 @@
         <!-- HOME PAGE -->
         <section id="home-page" class="page-section active">
             <div style="text-align: center; padding: 40px 0;">
-                <h1 id="welcome-title">Welcome to Wallet Tracker</h1>
-                <p>Track your expenses, set goals, and master your finances with our premium tool.</p>
-                <br>
+                <h1 id="welcome-title">Welcome Back</h1>
+
+                <!-- Daily Dashboard Summary -->
+                <div id="daily-dashboard" class="card"
+                    style="max-width: 400px; margin: 0 auto 30px auto; text-align: left; padding: 20px;">
+                    <h3 style="margin-top:0; font-size: 1.2rem; color: var(--nav-text);">Today's Overview</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                        <div>
+                            <span style="font-size: 0.9rem; opacity: 0.8;">Spent Today</span>
+                            <div id="daily-spend-display" style="font-size: 1.5rem; font-weight: 800; color: #ef5350;">
+                                $0.00</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="font-size: 0.9rem; opacity: 0.8;">Balance</span>
+                            <div id="daily-balance-display"
+                                style="font-size: 1.5rem; font-weight: 800; color: var(--primary-color);">$0.00</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
                     <button class="btn btn-primary" onclick="openWallet()">Launch Wallet App</button>
                     <button class="btn btn-secondary" onclick="navigateTo('about')">Learn More</button>
@@ -590,11 +685,16 @@
 
     <!-- WALLET OVERLAY (The App) -->
     <div class="popup-overlay" id="walletOverlay" onclick="closeWalletOnOverlay(event)">
-        <div class="popup-box" style="max-width: 600px;">
-            <button class="close-btn" onclick="closeWallet()">×</button>
+        <!-- Added max-height and overflow-y for scrolling on small screens -->
+        <div class="popup-box" style="max-width: 600px; max-height: 85vh; overflow-y: auto;">
 
             <!-- Login Section -->
             <div id="authSection" style="text-align: center; padding: 20px;">
+                <!-- Close Button for Login Screen -->
+                <button onclick="closeWallet()"
+                    style="float: right; border: none; background: none; font-size: 1.5rem; cursor: pointer; color: #999;">×</button>
+                <div style="clear: both;"></div>
+
                 <div id="loginForm">
                     <h2>🔐 Login</h2>
                     <input type="text" id="loginUsername" placeholder="Username">
@@ -629,9 +729,83 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h2 style="margin: 0;">💰 Wallet</h2>
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <span id="userDisplay" style="font-weight: bold; opacity: 0.7;"></span>
+                        <button onclick="toggleJobPanel()" title="Job / Income"
+                            style="background:none; border:none; cursor:pointer; font-size:1rem; color: var(--primary-color); font-weight: bold;">Work</button>
+                        <button onclick="toggleSettings()" title="Settings"
+                            style="background:none; border:none; cursor:pointer; font-weight: bold; font-size: 0.9rem;">Settings</button>
                         <button onclick="logout()"
                             style="padding: 5px 10px; background-color: #ef5350; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Logout</button>
+                        <button onclick="closeWallet()"
+                            style="border: none; background: none; font-size: 1.5rem; cursor: pointer; color: #999; margin-left: 5px;">×</button>
+                    </div>
+                </div>
+
+                <!-- Settings / Profile Section -->
+                <div id="settingsSection"
+                    style="display: none; text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
+                    <h3>Profile Settings</h3>
+                    <div class="avatar-upload">
+                        <img id="wallet-avatar-preview" src="assets/icons/house-face-open.svg" class="avatar-preview">
+                        <button class="avatar-edit-btn"
+                            onclick="document.getElementById('avatarInput').click()">✏️</button>
+                        <input type="file" id="avatarInput" accept="image/*" style="display: none;"
+                            onchange="handleAvatarUpload(this)">
+                    </div>
+                    <p id="settings-username" style="font-weight: bold;"></p>
+                </div>
+
+                <!-- Job / Income Section -->
+                <div id="jobSection"
+                    style="display: none; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
+                    <h3 style="text-align: center;">💼 Work & Income</h3>
+                    <p style="font-size: 0.9rem; text-align: center; margin-bottom: 15px;">Configure your work schedule
+                        to calculate earnings.</p>
+
+                    <div style="background: var(--highlight-bg); padding: 15px; border-radius: 8px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Hourly Rate ($)</label>
+                        <input type="number" id="hourlyRateInput" placeholder="e.g. 15.00"
+                            oninput="calculateJobEarnings()">
+
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; margin-top: 10px;">Weekday
+                            Hours (Mon-Fri)</label>
+                        <input type="number" id="weekdayHoursInput" placeholder="Hours per day (e.g. 8)"
+                            oninput="calculateJobEarnings()">
+
+                        <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="weekendWorkDetailsCheckbox" style="width: auto; margin: 0;"
+                                onchange="toggleWeekendInput()">
+                            <label for="weekendWorkDetailsCheckbox">I work on weekends</label>
+                        </div>
+
+                        <div id="weekendInputContainer" style="display: none; margin-top: 10px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Weekend Hours (Sat &
+                                Sun)</label>
+                            <input type="number" id="weekendHoursInput" placeholder="Hours per day (e.g. 5)"
+                                oninput="calculateJobEarnings()">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px; text-align: center;">
+                        <div style="display: flex; justify-content: space-around; margin-bottom: 15px;">
+                            <div>
+                                <small>Weekly Earn</small>
+                                <div id="calcWeeklyEarn"
+                                    style="font-weight: 800; font-size: 1.2rem; color: var(--primary-color);">$0.00
+                                </div>
+                            </div>
+                            <div>
+                                <small>Monthly (Est.)</small>
+                                <div id="calcMonthlyEarn" style="font-weight: 800; font-size: 1.2rem; color: #1976d2;">
+                                    $0.00</div>
+                            </div>
+                        </div>
+
+                        <button id="collectPayBtn" onclick="collectPaycheck()" class="btn btn-accent"
+                            style="width: 100%; opacity: 0.5; cursor: not-allowed;" disabled>
+                            Generate Paycheck (Weekly)
+                        </button>
+                        <p id="paycheckTimer" style="font-size: 0.8rem; color: #666; margin-top: 5px;">Configure
+                            settings to enable.</p>
                     </div>
                 </div>
 
@@ -640,6 +814,11 @@
                     style="text-align: center; background: linear-gradient(135deg, var(--card-bg), var(--highlight-bg)); border: none;">
                     <h3 style="margin-top:0;">Current Balance</h3>
                     <h1 id="displayBalance" style="color: var(--primary-color); margin: 10px 0;">$0.00</h1>
+
+                    <!-- Chart Container -->
+                    <div style="position: relative; height: 200px; width: 100%; margin-top: 20px;">
+                        <canvas id="spendingChart"></canvas>
+                    </div>
                 </div>
 
                 <!-- Transaction Form -->
@@ -650,6 +829,17 @@
                             <option value="gain">✚ Gain</option>
                             <option value="spend">━ Spend</option>
                         </select>
+                        <select id="transactionCategory" style="flex: 1;">
+                            <option value="General">General</option>
+                            <option value="Food">🍔 Food</option>
+                            <option value="Transport">🚗 Transport</option>
+                            <option value="Housing">🏠 Housing</option>
+                            <option value="Entertainment">🎬 Fun</option>
+                            <option value="Shopping">🛍️ Shop</option>
+                            <option value="Health">🩺 Health</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                         <select id="transactionSource" style="flex: 1;">
                             <option value="cash">💵 Cash</option>
                             <option value="bank">🏦 Bank</option>
